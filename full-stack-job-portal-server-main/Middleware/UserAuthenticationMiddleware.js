@@ -28,6 +28,11 @@ exports.authenticateUser = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("Token Verification Error:", error); // Debugging
-        next(createHttpError(401, "Unauthorized User: Invalid or expired token"));
+        
+        if (error.name === "TokenExpiredError") {
+            return next(createHttpError(401, "Unauthorized User: Token expired"));
+        } else {
+            return next(createHttpError(401, "Unauthorized User: Invalid token"));
+        }
     }
 };
