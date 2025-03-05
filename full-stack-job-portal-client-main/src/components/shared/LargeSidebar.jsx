@@ -22,6 +22,9 @@ const LargeSidebar = () => {
                     <h6 className="text-sm font-semibold capitalize mt-1">
                         {user?.username}
                     </h6>
+                    <p className="text-xs capitalize -mt-0 font-medium status-text">
+                        {user?.status}
+                    </p>
                     <p className="text-xs capitalize -mt-1 font-medium">
                         {user?.role}
                     </p>
@@ -41,6 +44,11 @@ const Wrapper = styled.aside`
         display: flex;
         flex-direction: column;
         align-items: center;
+    }
+
+     .status-text {
+        color: green; /* Set the text color to green */
+        font-weight: bold; /* Optional: Make the text bold */
     }
 
     @media (min-width: 992px) {

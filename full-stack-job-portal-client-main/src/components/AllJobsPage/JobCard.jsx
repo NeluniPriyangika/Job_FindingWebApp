@@ -12,13 +12,19 @@ dayjs.extend(advancedFormat);
 
 import { useUserContext } from "../../context/UserContext";
 
-import { Link } from "react-router-dom";
+import { Link , useNavigate} from "react-router-dom";
 import { postHandler } from "../../utils/FetchHandlers";
 import Swal from "sweetalert2";
 
 const JobCard = ({ job }) => {
     const date = dayjs(job?.jobDeadline).format("MMM Do, YYYY");
     const { user } = useUserContext();
+    const navigate = useNavigate(); // Use the useNavigate hook
+
+    // Function to navigate to the Application page
+    const navigateToApplication = (jobId) => {
+        navigate(`/job/${jobId}/apply`); // Navigate to the Application page
+    };
 
     const handleApply = async (id) => {
         let currentDate = new Date();
@@ -96,7 +102,7 @@ const JobCard = ({ job }) => {
                     {user?.role === "user" && (
                         <button
                             className="apply-btn"
-                            onClick={() => handleApply(job._id)}
+                            onClick={() => navigateToApplication(job._id)} // Navigate to the Application page
                         >
                             Apply
                         </button>

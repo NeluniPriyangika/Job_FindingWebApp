@@ -16,6 +16,16 @@ const UserSchema = new mongoose.Schema(
             enum: ["admin", "recruiter", "user"],
             default: "user",
         },
+        userCategory: {
+            type: String,
+            enum: ["Company", "Professional", "General Worker"],
+            default: "General Worker",
+        },
+        status: {
+            type: String,
+            enum: ["verified", "unverified"],
+            default: "unverified",
+        },
         resume: {
             type: String,
         },

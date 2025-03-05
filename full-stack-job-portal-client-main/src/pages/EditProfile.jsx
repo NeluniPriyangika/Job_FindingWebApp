@@ -43,7 +43,7 @@ const EditProfile = () => {
     } = useForm();
 
     const onSubmit = async (data) => {
-        const { username, location, resume, gender } = data;
+        const { username, location, resume, gender, userCategory } = data;
         const updateUser = { email: user?.email };
         try {
             if (username) {
@@ -57,6 +57,9 @@ const EditProfile = () => {
             }
             if (gender) {
                 updateUser.gender = gender;
+            }
+            if (userCategory) {
+                updateUser.userCategory = userCategory;
             }
 
             const response = await axios.patch(
@@ -166,6 +169,35 @@ const EditProfile = () => {
                                 {errors?.role && (
                                     <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
                                         {errors?.role?.message}
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Category */}
+                            <div className="row">
+                                <label htmlFor="userCategory">Category</label>
+                                <select
+                                    name="userCategory"
+                                    id="userCategory"
+                                    defaultValue={user?.userCategory}
+                                    {...register("userCategory", {
+                                        validate: {
+                                            valueType: (value) => {
+                                                return (
+                                                    value !== "none" ||
+                                                    "Select One"
+                                                );
+                                            },
+                                        },
+                                    })}
+                                >
+                                    <option value="Company">Company</option>
+                                    <option value="Professional">Professional</option>
+                                    <option value="General Worker">General Worker</option>
+                                </select>
+                                {errors?.userCategory && (
+                                    <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
+                                        {errors?.userCategory?.message}
                                     </span>
                                 )}
                             </div>

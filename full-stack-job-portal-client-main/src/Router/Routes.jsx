@@ -20,6 +20,7 @@ import {
     EditProfile,
     ManageUsers,
 } from "../pages";
+import Application from "../pages/Application";
 
 import { JobContext } from "../context/JobContext";
 
@@ -53,6 +54,16 @@ const router = createBrowserRouter([
                     <CommonProtectRoute>
                         <JobContext>
                             <Job />
+                        </JobContext>
+                    </CommonProtectRoute>
+                ),
+            },
+            {
+                path: "job/:id/apply",
+                element: (
+                    <CommonProtectRoute>
+                        <JobContext>
+                            <Application />
                         </JobContext>
                     </CommonProtectRoute>
                 ),

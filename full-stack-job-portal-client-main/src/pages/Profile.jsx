@@ -55,6 +55,10 @@ const Profile = () => {
                                 <td className="value">{user?.role}</td>
                             </tr>
                             <tr className="row">
+                                <td className="info">Category :</td>
+                                <td className="value">{user?.userCategory}</td>
+                            </tr>
+                            <tr className="row">
                                 <td className="info">email :</td>
                                 <td className="value email">{user?.email}</td>
                             </tr>
@@ -70,8 +74,13 @@ const Profile = () => {
                             </tr>
                             <tr className="row">
                                 <td className="info">Gender :</td>
-                                <td className="value">Male</td>
+                                <td className="value">{user?.gender}</td>
                             </tr>
+                            <tr className="row">
+                                <td className="info">Status :</td>
+                                <td className="value status-value" >{user?.status}</td>
+                            </tr>
+                            
                         </tbody>
                     </table>
                 </div>
@@ -180,6 +189,12 @@ const Wrapper = styled.section`
     td.value {
         color: #000000e0;
     }
+
+    td.status-value {
+            color: green; /* Set the text color to green */
+            font-weight: bold; /* Optional: Make the text bold */
+        }
+
     @media screen and (max-width: 785px) {
         .title {
             margin-bottom: 25px;

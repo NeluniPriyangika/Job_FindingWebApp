@@ -21,10 +21,11 @@ const Register = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const role = watch("role");
 
     const onSubmit = async (data) => {
         // password: A@1abcde
-        const { username, email, password, confirmPassword, role } = data;
+        const { username, email, password, confirmPassword, role, userCategory } = data;
 
         if (password !== confirmPassword) {
             setIsPasswordMatched({
@@ -34,7 +35,7 @@ const Register = () => {
             return;
         } else {
             setIsLoading(true);
-            const user = { username, email, password, role };
+            const user = { username, email, password, role, userCategory, status: "unverified"  };
             // posting
             try {
                 const response = await axios.post(
@@ -206,6 +207,7 @@ const Register = () => {
                         >
                             <option value="user">User</option>
                             <option value="recruiter">Recruiter</option>
+                            <option value="admin">Admin</option>
                         </select>
                         {errors?.role && (
                             <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
@@ -213,6 +215,29 @@ const Register = () => {
                             </span>
                         )}
                     </div>
+                    {role === "user" && (
+                        <div className="row">
+                            <label htmlFor="userCategory">User Category</label>
+                            <select
+                                name="userCategory"
+                                {...register("userCategory", {
+                                    required: {
+                                        value: true,
+                                        message: "User category is required",
+                                    },
+                                })}
+                            >
+                                <option value="Company">Company</option>
+                                <option value="Professional">Professional</option>
+                                <option value="General Worker">General Worker</option>
+                            </select>
+                            {errors?.userCategory && (
+                                <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
+                                    {errors?.userCategory?.message}
+                                </span>
+                            )}
+                        </div>
+                    )}
                     <div className="flex justify-center">
                         <button type="submit" disabled={isLoading}>
                             {isLoading ? "Loading..." : "Register"}
@@ -231,6 +256,7 @@ const Register = () => {
         </Wrapper>
     );
 };
+
 
 const Wrapper = styled.div`
     width: 100%;
