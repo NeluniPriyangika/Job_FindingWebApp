@@ -26,6 +26,10 @@ const UserSchema = new mongoose.Schema(
             enum: ["verified", "unverified"],
             default: "unverified",
         },
+        verified: {
+            type: Boolean,
+            default: false,
+        },
         resume: {
             type: String,
         },

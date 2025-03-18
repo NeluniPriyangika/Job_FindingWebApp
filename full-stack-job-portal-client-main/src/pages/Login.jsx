@@ -25,35 +25,41 @@ const Login = () => {
 
     const onSubmit = async (data) => {
         setIsLoading(true);
-        // password: A@1abcde
-
-        // posting
+    
         try {
             const response = await axios.post(
                 "http://localhost:3000/api/v1/auth/login",
                 data,
-                {
-                    withCredentials: true,
-                }
+                { withCredentials: true }
             );
+    
             Swal.fire({
                 icon: "success",
                 title: "Hurray...",
-                text: response?.data?.message,
+                text: response?.data?.message || "Login successful!",
             });
-            handleFetchMe();
-
+    
+            handleFetchMe(); // Fetch user data after login
             reset();
-            navigate("/");
-            // navigate("/dashboard");
+            navigate("/"); // Redirect to the home page or dashboard
         } catch (error) {
-            Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                text: error?.response?.data,
-            });
+            if (error.response?.status === 403) {
+                Swal.fire({
+                    icon: "warning",
+                    title: "Account Not Verified",
+                    text: error.response.data.message,
+                    footer: '<a href="/resend-verification">Resend verification email</a>',
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: error.response?.data?.message || "Login failed. Please try again.",
+                });
+            }
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     return (

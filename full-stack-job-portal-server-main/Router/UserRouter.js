@@ -1,6 +1,7 @@
 const express = require("express");
 const UserRouter = express.Router();
 
+
 // Controllers
 const UserController = require("../Controller/UserController");
 
@@ -27,6 +28,14 @@ UserRouter.route("/")
 UserRouter.route("/:id")
     .get(UserController.getSingleUser)
     .delete(userAuthorizationHandler("admin"), UserController.deleteUser);
+
+
+// Email Verification Route
+UserRouter.route("/:id/verify/:token")
+    .get(UserController.verifyEmail);
+
+// Routes
+UserRouter.post("/resend-verification", UserController.resendEmail);
 
 module.exports = UserRouter;
 

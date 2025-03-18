@@ -27,6 +27,8 @@ import { JobContext } from "../context/JobContext";
 import CommonProtectRoute from "../components/shared/CommonProtectRoute";
 import ProtectAdminRoute from "../components/shared/ProtectAdminRoute";
 import RecruiterRoute from "../components/shared/RecruiterRoute";
+import ResendVerification from "../pages/ResendEmail/ResendVerification";
+import EmailVerify from "../pages/EmailVerify/EmailVerify";
 
 const router = createBrowserRouter([
     {
@@ -48,6 +50,7 @@ const router = createBrowserRouter([
                     </CommonProtectRoute>
                 ),
             },
+            
             {
                 path: "job/:id",
                 element: (
@@ -76,6 +79,16 @@ const router = createBrowserRouter([
                 path: "login",
                 element: <Login></Login>,
             },
+            {
+                path: "/resend-verification",
+                element: <ResendVerification />
+            },
+            {
+                path:"/verify-email/:id/verify/:token" ,
+                element: <EmailVerify />
+
+            },
+            
             {
                 path: "dashboard",
                 element: (
