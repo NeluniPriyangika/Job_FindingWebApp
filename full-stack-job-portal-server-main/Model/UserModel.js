@@ -32,7 +32,7 @@ const UserSchema = new mongoose.Schema(
         },
         resume: {
             type: String,
-        },
+        }
     },
     { timestamps: true } // to keep track
 );

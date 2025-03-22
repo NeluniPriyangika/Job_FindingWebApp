@@ -2,8 +2,14 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
+require("dotenv").config();
+const mongoose = require("mongoose");
+
 
 app.use(cookieParser(process.env.COOKIE_SECRET));
+
+
 
 // Middlewares
 app.use(express.json());

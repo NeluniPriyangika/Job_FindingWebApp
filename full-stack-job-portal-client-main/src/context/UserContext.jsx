@@ -11,10 +11,21 @@ const UserContext = ({ children }) => {
     const handleFetchMe = async () => {
         setUserLoading(true);
         try {
+            const token = localStorage.getItem("token"); // Get token from localStorage
+            if (!token) {
+                throw new Error("No token found. Please log in.");
+            }
+    
             const response = await axios.get(
                 `http://localhost:3000/api/v1/auth/me`,
-                { withCredentials: true }
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    withCredentials: true,
+                }
             );
+    
             setUserError({ status: false, message: "" });
             setUser(response?.data?.result);
         } catch (error) {

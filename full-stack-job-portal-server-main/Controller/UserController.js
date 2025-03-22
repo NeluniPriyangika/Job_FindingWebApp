@@ -4,16 +4,16 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const JWTGenerator = require("../Utils/JWTGenerator");
 const sendEmail = require("../Utils/SendEmail");
-const Token = require("../Model/Token");
+const TokenModel = require("../Model/Token");
 const crypto = require("crypto");
 
 exports.getAllUser = async (req, res, next) => {
     try {
-        const result = await UserModel.find({}).select("-password");
-        if (result.length !== 0) {
+        const user = await UserModel.find({}).select("-password");
+        if (user.length !== 0) {
             res.status(200).json({
                 status: true,
-                result,
+                user,
             });
         } else {
             next(createError(200, "User list is empty"));
@@ -31,7 +31,7 @@ exports.getMe = async (req, res, next) => {
         } else {
             res.status(200).json({
                 status: true,
-                result: me,
+                user: me,
             });
         }
     } catch (error) {
@@ -82,22 +82,22 @@ exports.addUser = async (req, res, next) => {
         const newUser = new UserModel(data);
         console.log("New user object:", newUser); // Debugging: Log new user object
 
-        const result = await newUser.save(); // Ensure this line is present
-        console.log("User saved:", result); // Debugging: Log saved user
+        const user = await newUser.save(); // Ensure this line is present
+        console.log("User saved:", user); // Debugging: Log saved user
 
-        const token = await new Token({
-            userId: result._id, // Use result._id instead of result.id
+        const token = await new TokenModel({
+            userId: user._id, // Use user._id instead of user.id
             token: crypto.randomBytes(32).toString("hex"),
         }).save();
 
         console.log("Token saved:", token); // Debugging: Log saved token
 
         // Construct the verification URL
-        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${result._id}/verify/${token.token}`;
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${user._id}/verify/${token.token}`;
         console.log("Verification URL:", verificationUrl); // Debugging: Log verification URL
 
         // Send the verification email
-        await sendEmail(result.email, "Verify Email", verificationUrl);
+        await sendEmail(user.email, "Verify Email", verificationUrl);
 
         res.status(200).json({
             status: true,
@@ -105,6 +105,101 @@ exports.addUser = async (req, res, next) => {
         });
     } catch (error) {
         console.error("Error in addUser:", error); // Debugging: Log the error
+        next(createError(500, error.message));
+    }
+};
+
+// Verify the user's email
+exports.verifyEmail = async (req, res, next) => {
+    try {
+        const { id, token } = req.params;
+
+        console.log("Verification request received:", { id, token });
+
+        // Find the user
+        const user = await UserModel.findOne({ _id: id });
+        if (!user) {
+            console.log("User not found");
+            return res.status(400).json({
+                status: false,
+                message: "Invalid link",
+            });
+        }
+
+        // Find the token
+        const tokenDoc = await TokenModel.findOne({
+            userId: user._id,
+            token: token,
+        });
+        console.log("Token lookup result:", tokenDoc ? "Found" : "Not found");
+        if (!tokenDoc) {
+            console.log("Token not found or expired");
+            return res.status(400).json({
+                status: false,
+                message: "Invalid or expired token",
+            });
+        }
+
+        // Mark the user as verified
+        await UserModel.updateOne({ _id: user._id }, { verified: true });
+        console.log("User verification status updated to true");
+
+        //await TokenModel.deleteOne({ _id: tokenDoc._id });
+        //console.log("Token deleted successfully");
+
+
+        res.status(200).json({
+            status: true,
+            message: "Email verified successfully",
+        });
+    } catch (error) {
+        console.error("Verification error:", error);
+        next(createError(500, error.message));
+    }
+};
+
+// Resend verification email
+exports.resendEmail = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+
+        // Find the user
+        const user = await UserModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
+                status: false,
+                message: "User not found.",
+            });
+        }
+
+        // Check if the user is already verified
+        if (user.verified) {
+            return res.status(400).json({
+                status: false,
+                message: "User is already verified.",
+            });
+        }
+
+        // Delete the existing token if it exists
+        await TokenModel.deleteOne({ userId: user._id });
+
+        // Generate a new token
+        const token = await new TokenModel({
+            userId: user._id,
+            token: crypto.randomBytes(32).toString("hex"),
+        }).save();
+
+        // Construct the verification URL
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-email/${user._id}/verify/${token.token}`;
+
+        // Send the verification email
+        await sendEmail(user.email, "Verify Email", verificationUrl);
+
+        res.status(200).json({
+            status: true,
+            message: "Verification email has been resent.",
+        });
+    } catch (error) {
         next(createError(500, error.message));
     }
 };
@@ -166,94 +261,7 @@ exports.loginUser = async (req, res, next) => {
     }
 };
 
-exports.verifyEmail = async (req, res, next) => {
-    try {
-        const user = await UserModel.findOne({ _id: req.params.id });
-        if (!user) {
-            return res.status(400).json({
-                status: false,
-                message: "Invalid link"
-            });
-        }
 
-        const token = await Token.findOne({
-            userId: user._id,
-            token: req.params.token,
-        });
-        
-        if (!token) {
-            return res.status(400).json({
-                status: false,
-                message: "Invalid or expired token"
-            });
-        }
-
-        await UserModel.updateOne({ _id: user._id }, { verified: true });
-        await Token.deleteOne({ _id: token._id });
-
-        // Return a success JSON response for the React frontend
-        return res.status(200).json({
-            status: true,
-            message: "Email verified successfully"
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({
-            status: false,
-            message: "Server error"
-        });
-    }
-};
-
-exports.resendEmail = async (req, res) => {
-    try {
-        const { email } = req.body;
-
-        // Check if the user exists
-        const user = await UserModel.findOne({ email });
-        if (!user) {
-            return res.status(404).json({
-                status: false,
-                message: "User not found.",
-            });
-        }
-
-        // Check if the user is already verified
-        if (user.verified) {
-            return res.status(400).json({
-                status: false,
-                message: "User is already verified.",
-            });
-        }
-
-        // Delete the existing token if it exists
-        const existingToken = await Token.findOne({ userId: user._id });
-        if (existingToken) {
-            await existingToken.remove();
-        }
-
-        // Generate a new token
-        const newToken = await new Token({
-            userId: user._id,
-            token: crypto.randomBytes(32).toString("hex"),
-        }).save();
-
-        // Send the verification email
-        const url = `${process.env.BASE_URL}users/${user.id}/verify/${newToken.token}`;
-        await sendEmail(user.email, "Verify Email", url);
-
-        res.status(200).json({
-            status: true,
-            message: "Verification email has been resent.",
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            status: false,
-            message: "Internal Server Error",
-        });
-    }
-};
 
 exports.updateUser = async (req, res, next) => {
     const data = req.body;
@@ -273,13 +281,13 @@ exports.updateUser = async (req, res, next) => {
                 res.status(200).json({
                     status: true,
                     message: "Profile Updated",
-                    result: updatedUser,
+                    user: updatedUser,
                 });
             } else {
                 res.status(200).json({
                     status: false,
                     message: "No changes were made",
-                    result: null,
+                    user: null,
                 });
             }
         }
@@ -302,7 +310,7 @@ exports.deleteUser = async (req, res, next) => {
                 message: "User not found",
             });
         } else {
-            const result = await UserModel.findByIdAndDelete(id);
+            const user = await UserModel.findByIdAndDelete(id);
             res.status(200).json({
                 status: true,
                 message: "User Deleted",
@@ -315,7 +323,7 @@ exports.deleteUser = async (req, res, next) => {
 
 exports.deleteAllUser = async (req, res, next) => {
     try {
-        result = await UserModel.deleteMany({});
+        user = await UserModel.deleteMany({});
         res.status(201).json({
             status: true,
             message: "All userd deleted",

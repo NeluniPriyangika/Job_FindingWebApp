@@ -33,4 +33,10 @@ AuthRouter.post(
     UserController.loginUser
 );
 
+// Email verification routes
+// In AuthRouter.js
+AuthRouter.get("/me/:id/verify/:token", UserController.verifyEmail);
+AuthRouter.post("/resend-verification", UserController.resendEmail);
+
+
 module.exports = AuthRouter;

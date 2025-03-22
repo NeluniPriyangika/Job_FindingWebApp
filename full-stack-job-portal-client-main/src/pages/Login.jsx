@@ -33,6 +33,9 @@ const Login = () => {
                 { withCredentials: true }
             );
     
+            // Store the token in localStorage
+            localStorage.setItem("token", response.data.token);
+    
             Swal.fire({
                 icon: "success",
                 title: "Hurray...",
@@ -41,7 +44,7 @@ const Login = () => {
     
             handleFetchMe(); // Fetch user data after login
             reset();
-            navigate("/"); // Redirect to the home page or dashboard
+            navigate(from); // Redirect to the intended location
         } catch (error) {
             if (error.response?.status === 403) {
                 Swal.fire({
