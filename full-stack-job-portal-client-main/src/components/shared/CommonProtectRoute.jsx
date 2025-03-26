@@ -1,21 +1,19 @@
-import React from "react";
 import { useUserContext } from "../../context/UserContext";
 import { Navigate, useLocation } from "react-router-dom";
-import Loading from "./Loading";
 
 const CommonProtectRoute = ({ children }) => {
+    const { user, userLoading } = useUserContext();
     const location = useLocation();
-    const { userLoading, user } = useUserContext();
 
     if (userLoading) {
-        return <Loading />;
+        return <div>Loading...</div>; // Or a proper loading spinner
     }
 
-    if (user?.email) {
-        return children;
+    if (!user) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return children;
 };
 
 export default CommonProtectRoute;

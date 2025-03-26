@@ -3,7 +3,14 @@ const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema(
     {   username: String,
-        email: String,
+        email: {
+            type: String,
+            required: true,
+            unique: true,
+            lowercase: true,  // Automatically convert to lowercase
+            trim: true,       // Remove whitespace
+            match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
+        },
         password: String,
         location: {
             type: String,
@@ -21,10 +28,10 @@ const UserSchema = new mongoose.Schema(
             enum: ["Company", "Professional", "General Worker"],
             default: "General Worker",
         },
-        status: {
+        userConfirm: {
             type: String,
-            enum: ["verified", "unverified"],
-            default: "unverified",
+            enum: ["ConfirmedUser", "User Not Confirmed"],
+            default: "User Not Confirmed",
         },
         verified: {
             type: Boolean,
@@ -39,10 +46,10 @@ const UserSchema = new mongoose.Schema(
 
 // Hashing Password
 UserSchema.pre("save", async function (next) {
-    const password = this.password;
-    const salt = await bcrypt.genSalt(16);
-    const hashedPassword = bcrypt.hashSync(password, salt);
-    this.password = hashedPassword;
+    if (this.isModified('password')) {
+        const salt = await bcrypt.genSalt(Number(process.env.SALT) || 10);
+        this.password = await bcrypt.hash(this.password, salt);
+    }
     next();
 });
 

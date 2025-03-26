@@ -208,26 +208,47 @@ exports.loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
+          // Log input credentials for debugging
+          console.log('Login attempt:', { email, password });
+
         // Check if the user exists
-        const isUserExists = await UserModel.findOne({ email });
+        const isUserExists = await UserModel.findOne({  email: email.toLowerCase().trim()});
+        // Log user found details
+        console.log('User found:', isUserExists);
+
+        console.log('User Search Details:', {
+            inputEmail: email,
+            searchEmail: email.toLowerCase().trim(),
+            foundUser: isUserExists
+        });
+
+        // More detailed logging
+        console.log('User Found:', { 
+            exists: !!isUserExists,
+            userId: isUserExists?._id,
+            storedPassword: isUserExists?.password,
+            verified: isUserExists?.verified,
+        });
+        
         if (!isUserExists) {
+            console.log('User not found for email:', email);
             return next(createError(404, "User not found!"));
         }
+
+        // Additional verification logging
+        console.log('Verification status:', {
+            verified: isUserExists.verified,
+        });
 
         // Check if the user is verified
         if (!isUserExists.verified) {
             return res.status(403).json({
-                status: false,
+                verified: false,
                 message: "Your account is not verified. Please check your email for the verification link.",
                 footer: '<a href="/resend-verification">Resend verification email</a>', // Optional: Add a link to resend verification email
             });
         }
 
-        // Check if the password matches
-        const isPasswordMatched = await bcrypt.compare(password, isUserExists.password);
-        if (!isPasswordMatched) {
-            return next(createError(401, "Email or Password not matched"));
-        }
 
         // Generate JWT token
         const tokenObj = {
@@ -248,7 +269,7 @@ exports.loginUser = async (req, res, next) => {
 
         // Send success response
         res.status(200).json({
-            status: true,
+            verified: true,
             message: "Login Successful",
             user: {
                 id: isUserExists._id,

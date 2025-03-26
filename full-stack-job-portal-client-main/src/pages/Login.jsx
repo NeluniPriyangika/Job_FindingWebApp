@@ -10,7 +10,7 @@ import Swal from "sweetalert2";
 import { useUserContext } from "../context/UserContext";
 
 const Login = () => {
-    const { handleFetchMe } = useUserContext();
+    const { handleFetchMe, user } = useUserContext();
     const {
         register,
         handleSubmit,
@@ -25,7 +25,7 @@ const Login = () => {
 
     const onSubmit = async (data) => {
         setIsLoading(true);
-    
+        
         try {
             const response = await axios.post(
                 "http://localhost:3000/api/v1/auth/login",
@@ -33,33 +33,21 @@ const Login = () => {
                 { withCredentials: true }
             );
     
-            // Store the token in localStorage
-            localStorage.setItem("token", response.data.token);
-    
-            Swal.fire({
-                icon: "success",
-                title: "Hurray...",
-                text: response?.data?.message || "Login successful!",
-            });
-    
-            handleFetchMe(); // Fetch user data after login
-            reset();
-            navigate(from); // Redirect to the intended location
-        } catch (error) {
-            if (error.response?.status === 403) {
-                Swal.fire({
-                    icon: "warning",
-                    title: "Account Not Verified",
-                    text: error.response.data.message,
-                    footer: '<a href="/resend-verification">Resend verification email</a>',
-                });
+            // Wait for user data to be fetched before redirecting
+            await handleFetchMe();
+            
+            // Check if user was actually set in context
+            if (user) {
+                navigate(from || "/dashboard", { replace: true });
             } else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Oops...",
-                    text: error.response?.data?.message || "Login failed. Please try again.",
-                });
+                throw new Error("Authentication failed");
             }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Login Failed",
+                text: error.response?.data?.message || error.message,
+            });
         } finally {
             setIsLoading(false);
         }
