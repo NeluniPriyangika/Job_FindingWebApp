@@ -1,23 +1,179 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 import Navbar from "../components/shared/Navbar";
 import PaginationCom from "../components/AllJobsPage/PaginationCom";
+import { useUserContext } from "../context/UserContext";
+import { postHandler } from "../utils/FetchHandlers"; // Ensure this import is correct
 
 const Application = () => {
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Handle form submission logic here
-        console.log("Form submitted!");
+    
+    const { id} = useParams();
+    const { user } = useUserContext();
+    const navigate = useNavigate();
+
+    // State for job details and form data
+    const [job, setJobDetails] = useState(null);
+    const [formData, setFormData] = useState({
+        fullName: user?.name || "",
+        phoneNumber: "",
+        email: user?.email || "",
+        address: "",
+        coverLetter: "",
+        note: "",
+        cv: null
+    });
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Fetch job details when component mounts
+    useEffect(() => {
+        const fetchJobDetails = async () => {
+            try {
+                if (!id) {
+                    throw new Error("Job ID is missing");
+                }
+                
+                setIsLoading(true);
+                const response = await axios.get(
+                    `http://localhost:3000/api/v1/jobs/${id}`, 
+                    { withCredentials: true }
+                );
+                // Change this line:
+                setJobDetails(response.data.result); // Use result instead of job
+            } catch (error) {
+                console.error("Error fetching job details:", error);
+                let errorMessage = "Could not fetch job details. Please try again.";
+                
+                if (error.response) {
+                    errorMessage = error.response.data.message || errorMessage;
+                } else if (error.request) {
+                    errorMessage = "No response from server. Please check your connection.";
+                } else {
+                    errorMessage = error.message || errorMessage;
+                }
+                
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: errorMessage
+                });
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchJobDetails();
+    }, [id]);
+
+    // Handle input changes
+    const handleChange = (e) => {
+        const { name, value, files } = e.target;
+        setFormData(prevState => ({
+            ...prevState,
+            [name]: files ? files[0] : value
+        }));
     };
+
+    // Apply method 
+    const handleApply = async () => {
+        // Ensure job details are loaded and valid
+        if (!job) {
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Job details are not available. Please try again."
+            });
+            return;
+        }
+
+        let currentDate = new Date();
+        let date = currentDate.toISOString().slice(0, 10);
+
+        const appliedJob = {
+            applicantId: user?._id,
+            recruiterId: job.createdBy, // Get recruiter ID from job details
+            jobId: id,
+            status: "pending",
+            dateOfApplication: date,
+            resume: user?.resume || "",
+            fullName: formData.fullName,
+            phoneNumber: formData.phoneNumber,
+            email: formData.email,
+            address: formData.address,
+            coverLetter: formData.coverLetter,
+            note: formData.note || ""
+        };
+
+        try {
+            const response = await postHandler({
+                url: `http://localhost:3000/api/v1/jobs/${id}/apply`,
+                body: appliedJob,
+            });
+
+            Swal.fire({
+                icon: "success",
+                title: "Hurray...",
+                text: response?.data?.message,
+            }).then(() => {
+                navigate('/dashboard/applicant');
+            });
+        } catch (error) {
+            console.log(error);
+            if (error?.response?.data?.error) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: error?.response?.data?.error[0].msg,
+                });
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Oops...",
+                    text: error?.response?.data,
+                });
+            }
+        }
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Validate form data
+        if (!user?._id) {
+            Swal.fire({
+                icon: "error",
+                title: "Login Required",
+                text: "Please log in to submit an application"
+            });
+            return;
+        }
+
+        // Call the apply method
+        await handleApply();
+    };
+
+    // Show loading state
+    if (isLoading) {
+        return (
+            <>
+                <Navbar />
+                <Wrapper>
+                    <div>Loading job details...</div>
+                </Wrapper>
+            </>
+        );
+    }
 
     return (
         <>
-            <Navbar />
-            <Wrapper>
-                <FormWrapper>
-                    <h2>Job Application</h2>
-                    <form onSubmit={handleSubmit}>
+        <Navbar />
+        <Wrapper>
+            <FormWrapper>
+                <h2>Job Application for {job?.position}</h2>
+                <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="fullName">Full Name</label>
                             <input
@@ -25,6 +181,8 @@ const Application = () => {
                                 id="fullName"
                                 name="fullName"
                                 placeholder="Enter your full name"
+                                value={formData.fullName}
+                                onChange={handleChange}
                                 required
                             />
                         </div>
@@ -36,6 +194,8 @@ const Application = () => {
                                 id="phoneNumber"
                                 name="phoneNumber"
                                 placeholder="Enter your phone number"
+                                value={formData.phoneNumber}
+                                onChange={handleChange}
                                 required
                             />
                         </div>
@@ -47,6 +207,8 @@ const Application = () => {
                                 id="email"
                                 name="email"
                                 placeholder="Enter your email address"
+                                value={formData.email}
+                                onChange={handleChange}
                                 required
                             />
                         </div>
@@ -58,6 +220,8 @@ const Application = () => {
                                 id="address"
                                 name="address"
                                 placeholder="Enter your address"
+                                value={formData.address}
+                                onChange={handleChange}
                                 required
                             />
                         </div>
@@ -69,6 +233,8 @@ const Application = () => {
                                 name="coverLetter"
                                 placeholder="Write your cover letter here"
                                 rows="5"
+                                value={formData.coverLetter}
+                                onChange={handleChange}
                                 required
                             ></textarea>
                         </div>
@@ -80,32 +246,22 @@ const Application = () => {
                                 name="note"
                                 placeholder="Any additional notes"
                                 rows="3"
+                                value={formData.note}
+                                onChange={handleChange}
                             ></textarea>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="cv">Upload CV (Optional)</label>
-                            <input
-                                type="file"
-                                id="cv"
-                                name="cv"
-                                accept=".pdf,.doc,.docx"
-                            />
-                            <p className="hint">
-                                You can upload a new CV or use the one you uploaded during registration.
-                            </p>
                         </div>
 
                         <button type="submit" className="submit-btn">
                             Submit Application
                         </button>
                     </form>
-                </FormWrapper>
-                <PaginationCom />
-            </Wrapper>
-        </>
-    );
+            </FormWrapper>
+            <PaginationCom />
+        </Wrapper>
+    </>
+);
 };
+
 
 const Wrapper = styled.section`
     padding: 2rem 1.5rem;

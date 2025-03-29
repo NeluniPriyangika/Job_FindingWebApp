@@ -22,6 +22,8 @@ JobRouter.route("/")
         JobController.addJob
     )
     .delete(JobController.deleteAllJobs);
+    
+JobRouter.post("/:id/apply", authenticateUser, JobController.applyForJob);
 
 JobRouter.get("/my-jobs", JobController.getMyJobs);
 JobRouter.route("/:id")

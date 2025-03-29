@@ -261,3 +261,35 @@ module.exports.deleteAllJobs = async (req, res, next) => {
         next(createError(500, `something wrong: ${error.message}`));
     }
 };
+
+// In JobController.js
+exports.applyForJob = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const applicationData = req.body;
+        
+        // Validate job ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid Job ID" });
+        }
+        
+        // Check if job exists
+        const job = await JobModel.findById(id);
+        if (!job) {
+            return res.status(404).json({ message: "Job not found" });
+        }
+        
+        // Create application (you'll need an ApplicationModel)
+        const application = await ApplicationModel.create({
+            ...applicationData,
+            jobId: id
+        });
+        
+        res.status(201).json({
+            message: "Application submitted successfully",
+            application
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

@@ -23,10 +23,10 @@ const LargeSidebar = () => {
                         {user?.username}
                     </h6>
                     <p className="text-xs capitalize -mt-0 font-medium status-text">
-                        {user?.status}
+                        {user?.userConfirm}
                     </p>
                     <p className="text-xs capitalize -mt-1 font-medium">
-                        {user?.role}
+                        Role: {user?.role}
                     </p>
                 </div>
                 <div className="content">

@@ -78,7 +78,7 @@ const Profile = () => {
                             </tr>
                             <tr className="row">
                                 <td className="info">Status :</td>
-                                <td className="value status-value" >{user?.status}</td>
+                                <td className="value status-value" >{user?.userConfirm}</td>
                             </tr>
                             
                         </tbody>
