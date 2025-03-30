@@ -24,7 +24,7 @@ const Application = () => {
         address: "",
         coverLetter: "",
         note: "",
-        cv: null
+        resume: null
     });
     const [isLoading, setIsLoading] = useState(true);
 
@@ -91,13 +91,36 @@ const Application = () => {
         let currentDate = new Date();
         let date = currentDate.toISOString().slice(0, 10);
 
+            // Check if user has a resume or if they've uploaded a new one
+        if (!user?.resume && !formData.resume) {
+            Swal.fire({
+                icon: "error",
+                title: "Resume Required",
+                text: "Please upload a resume to continue."
+            });
+            return;
+        }
+
+        // Use the new resume if provided, otherwise use the existing one
+        const resumeValue = formData.resume ? "New resume uploaded" : user?.resume;
+        
+        // Make sure resumeValue is not empty
+        if (!resumeValue) {
+            Swal.fire({
+                icon: "error",
+                title: "Resume Required",
+                text: "A resume is required to apply for this job."
+            });
+            return;
+        }
+
         const appliedJob = {
             applicantId: user?._id,
             recruiterId: job.createdBy, // Get recruiter ID from job details
             jobId: id,
             status: "pending",
             dateOfApplication: date,
-            resume: user?.resume || "",
+            resume: resumeValue,
             fullName: formData.fullName,
             phoneNumber: formData.phoneNumber,
             email: formData.email,
@@ -117,7 +140,7 @@ const Application = () => {
                 title: "Hurray...",
                 text: response?.data?.message,
             }).then(() => {
-                navigate('/dashboard/applicant');
+                navigate('/dashboard/my-jobs'); // Redirect to the dashboard after successful application
             });
         } catch (error) {
             console.log(error);
@@ -248,7 +271,23 @@ const Application = () => {
                                 rows="3"
                                 value={formData.note}
                                 onChange={handleChange}
+
                             ></textarea>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="cv">Upload CV (Optional)</label>
+                            <input
+                                type="file"
+                                id="resume"
+                                name="resume"
+                                accept=".pdf,.doc,.docx"
+                                onChange={handleChange}
+                                required={!user?.resume}// Make it required only if the user doesn't have a resume uploaded
+                            />
+                            <p className="hint">
+                                {user?.resume ? "You already have a CV uploaded. You can upload a new one or keep using your existing one." : "Please upload your CV."}
+                            </p>
                         </div>
 
                         <button type="submit" className="submit-btn">
