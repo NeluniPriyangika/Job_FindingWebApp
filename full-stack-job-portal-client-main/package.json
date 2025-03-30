@@ -12,6 +12,7 @@
     "dependencies": {
         "@tanstack/react-query": "^5.8.4",
         "axios": "^1.6.2",
+        "country-list": "^2.3.0",
         "dayjs": "^1.11.10",
         "localforage": "^1.10.0",
         "match-sorter": "^6.3.1",

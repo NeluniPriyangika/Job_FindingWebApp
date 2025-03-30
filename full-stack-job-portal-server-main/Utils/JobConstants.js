@@ -1,7 +1,7 @@
 exports.JOB_STATUS = {
-    PENDING: "pending",
-    INTERVIEW: "interview",
-    DECLINED: "declined",
+    COLLECTING_APPLICATIONS: "Collecting Applications",
+    INTERVIEWING: "interviewing",
+    CLOSED: "closed",
 };
 
 exports.JOB_TYPE = {

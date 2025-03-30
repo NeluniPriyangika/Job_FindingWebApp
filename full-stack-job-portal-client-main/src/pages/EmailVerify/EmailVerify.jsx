@@ -49,8 +49,9 @@ const EmailVerify = () => {
                     {status === "success" && (
                         <div>
                             <div className="text-green-500 text-5xl mb-4">✓</div>
-                            <h2 className="text-2xl font-bold text-green-600 mb-2">Verification Successful</h2>
+                            <h2 className="text-2xl font-bold text-green-600 mb-6">Verification Successful</h2>
                             <p className="text-gray-600 mb-6">{message}</p>
+                            <h2 className="text-1xl font-bold text-green-600 mb-2">You can Login to the system now..!</h2>
                             <Link 
                                 to="/login" 
                                 className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary-dark transition-colors"

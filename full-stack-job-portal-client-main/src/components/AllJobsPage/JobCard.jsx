@@ -33,7 +33,7 @@ const JobCard = ({ job }) => {
             applicantId: user?._id,
             recruiterId: job?.createdBy,
             jobId: id,
-            status: "pending",
+            status: "Collecting Applications",
             dateOfApplication: date,
             resume: user?.resume || "",
         };

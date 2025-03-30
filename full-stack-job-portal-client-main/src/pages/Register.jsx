@@ -25,7 +25,19 @@ const Register = () => {
 
     const onSubmit = async (data) => {
         // password: A@1abcde
-        const { username, email, password, confirmPassword, role, userCategory } = data;
+        const { username, 
+                email, 
+                password, 
+                confirmPassword, 
+                role, 
+                userCategory,
+                firstName,
+                lastName,
+                birthDate,
+                gender,
+                address,
+                country 
+            } = data;
 
         if (password !== confirmPassword) {
             setIsPasswordMatched({
@@ -35,7 +47,19 @@ const Register = () => {
             return;
         } else {
             setIsLoading(true);
-            const user = { username, email, password, role, userCategory, status: "unverified"  };
+            const user = { 
+                username, 
+                email, 
+                password, 
+                role, 
+                userCategory, 
+                status: "unverified" ,
+                firstName,
+                lastName,
+                birthDate: birthDate ? new Date(birthDate) : null,
+                gender,
+                address,
+            };
             // posting
             try {
                 const response = await axios.post(
@@ -106,16 +130,136 @@ const Register = () => {
                                     message:
                                         "Username is too short (min 3char)",
                                 },
-                                pattern: {
+                                /*pattern: {
                                     value: /^[A-Za-z][A-Za-z0-9_]*$/,
                                     message:
                                         "Username can't start with number and special characters",
-                                },
+                                },*/
                             })}
                         />
                         {errors?.username && (
                             <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
                                 {errors?.username?.message}
+                            </span>
+                        )}
+                    </div>
+                    <div className="row">
+                        <label htmlFor="firstName">First Name</label>
+                        <input
+                            type="text"
+                            name="firstName"
+                            placeholder="Type Here"
+                            {...register("firstName", {
+                                required: {
+                                    value: true,
+                                    message: "First name is required",
+                                },
+                                maxLength: {
+                                    value: 30,
+                                    message: "First name is too long (max 30char)",
+                                },
+                            })}
+                        />
+                        {errors?.firstName && (
+                            <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
+                                {errors?.firstName?.message}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="lastName">Last Name</label>
+                        <input
+                            type="text"
+                            name="lastName"
+                            placeholder="Type Here"
+                            {...register("lastName", {
+                                required: {
+                                    value: true,
+                                    message: "Last name is required",
+                                },
+                                maxLength: {
+                                    value: 30,
+                                    message: "Last name is too long (max 30char)",
+                                },
+                            })}
+                        />
+                        {errors?.lastName && (
+                            <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
+                                {errors?.lastName?.message}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="birthDate">Birth Date</label>
+                        <input
+                            type="date"
+                            name="birthDate"
+                            {...register("birthDate", {
+                                required: {
+                                    value: true,
+                                    message: "Birth date is required",
+                                },
+                                validate: (value) => {
+                                    const today = new Date();
+                                    const birthDate = new Date(value);
+                                    const age = today.getFullYear() - birthDate.getFullYear();
+                                    return age >= 18 || "You must be at least 18 years old";
+                                }
+                            })}
+                        />
+                        {errors?.birthDate && (
+                            <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
+                                {errors?.birthDate?.message}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="gender">Gender</label>
+                        <select
+                            name="gender"
+                            {...register("gender", {
+                                required: {
+                                    value: true,
+                                    message: "Gender is required",
+                                },
+                            })}
+                        >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                        {errors?.gender && (
+                            <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
+                                {errors?.gender?.message}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="row">
+                        <label htmlFor="address">Address</label>
+                        <input
+                            type="text"
+                            name="address"
+                            placeholder="Type Here"
+                            {...register("address", {
+                                required: {
+                                    value: true,
+                                    message: "Address is required",
+                                },
+                                maxLength: {
+                                    value: 100,
+                                    message: "Address is too long (max 100char)",
+                                },
+                            })}
+                        />
+                        {errors?.address && (
+                            <span className="text-[10px] font-semibold text-red-600 mt-1 pl-1 tracking-wider">
+                                {errors?.address?.message}
                             </span>
                         )}
                     </div>

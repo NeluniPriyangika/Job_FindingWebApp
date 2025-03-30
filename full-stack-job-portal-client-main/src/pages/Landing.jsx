@@ -25,14 +25,12 @@ const Landing = () => {
                     <div className="text-content">
                         <h1>
                             Get Your <span className="fancy">Dream Job </span> 
-                            Today!
+                            Today! <br />
+                            <span className="fancy">with </span> <br />
+                            hihypro.com 
                         </h1>
                         <p>
-                            Lorem ipsum dolor, sit amet consectetur adipisicing
-                            elit. Illo perferendis dignissimos eligendi voluptas
-                            exercitationem, eius aut mollitia quasi nisi
-                            voluptatem similique, tempore totam, odit
-                            repellendus non. Dolores eos animi recusandae.
+                        Tired of endless job searches? We connect top talent with leading employers in your field. Whether you are a fresh graduate or an experienced professional, we have opportunities tailored just for you.
                         </p>
                         <div className="btn-grp">
                             <Link className="btn" to="/all-jobs">
