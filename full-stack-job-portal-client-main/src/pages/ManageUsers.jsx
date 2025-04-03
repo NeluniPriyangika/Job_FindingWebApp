@@ -70,13 +70,15 @@ const ManageUsers = () => {
         // console.log(users);
     }
 
-    if (!users?.result?.length) {
+    if (!users?.user?.length) {
         return (
             <h2 className="text-lg md:text-3xl font-bold text-red-600 text-center mt-12">
                 -- User List is Empty --
             </h2>
         );
     }
+
+    
     return (
         <Wrapper>
             <div className="title-row">
@@ -95,7 +97,7 @@ const ManageUsers = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {users?.result?.map((user, index) => {
+                        {users?.user?.map((user, index) => {
                             let i =
                                 index + 1 < 10 ? `0${index + 1}` : index + 1;
                             return (
